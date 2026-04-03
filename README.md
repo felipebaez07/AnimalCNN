@@ -5,73 +5,110 @@ usando PyTorch, FastAPI y Streamlit.
 
 ---
 
-## 🐻 Animales que detecta
-Bear, Bird, Cat, Cow, Deer, Dog, Dolphin, Elephant,
-Giraffe, Horse, Kangaroo, Lion, Panda, Tiger, Zebra
+## 🎯 ¿Qué hace esta aplicación?
+
+Permite entrenar una red neuronal con imágenes de animales y luego
+clasificar cualquier imagen que el usuario suba, mostrando el animal
+detectado con su porcentaje de confianza y un Top 3 de predicciones.
 
 ---
 
-## 🏗️ Arquitectura del modelo
-- **Tipo:** CNN (Red Neuronal Convolucional)
-- **Framework:** PyTorch
-- **Capas:** 3 bloques Conv2D + ReLU + MaxPooling → Flatten → Dense(512) → Dense(15)
-- **Input:** Imágenes 128x128 RGB
-- **Salida:** 15 clases con probabilidades (softmax)
-- **Método:** Aprendizaje supervisado — clasificación multiclase
+## 🧠 Conceptos de Machine Learning aplicados
+
+| Concepto | Descripción |
+|---|---|
+| **Tipo de aprendizaje** | Supervisado |
+| **Tarea** | Clasificación multiclase (15 clases) |
+| **Arquitectura** | CNN — Red Neuronal Convolucional |
+| **Framework** | PyTorch |
+| **Optimizador** | Adam |
+| **Función de pérdida** | CrossEntropyLoss |
+| **Regularización** | Dropout 0.5 |
+| **Data Augmentation** | Flip, Rotación, ColorJitter |
+
+---
+
+## 🏗️ Arquitectura de la CNN
+
+```
+Input (128x128 RGB)
+    ↓
+Conv2D(32 filtros) + ReLU + MaxPool  ← detecta bordes y texturas
+    ↓
+Conv2D(64 filtros) + ReLU + MaxPool  ← detecta formas
+    ↓
+Conv2D(128 filtros) + ReLU + MaxPool ← detecta patrones complejos
+    ↓
+Flatten → Dense(512) + ReLU + Dropout(0.5)
+    ↓
+Dense(15) + Softmax
+    ↓
+Salida: probabilidad de cada animal
+```
+
+---
+
+## 🐻 Animales que detecta (15 clases)
+
+Bear · Bird · Cat · Cow · Deer · Dog · Dolphin · Elephant ·
+Giraffe · Horse · Kangaroo · Lion · Panda · Tiger · Zebra
 
 ---
 
 ## 📁 Estructura del proyecto
+
 ```
 AnimalCNN/
 ├── app/
-│   └── main.py          ← Backend FastAPI
+│   └── main.py          ← Backend FastAPI (endpoints /predict/ y /train/)
 ├── models/
-│   ├── cnn_arch.py      ← Arquitectura CNN
-│   ├── trainer.py       ← Entrenamiento
+│   ├── cnn_arch.py      ← Arquitectura CNN en PyTorch
+│   ├── trainer.py       ← Lógica de entrenamiento
 │   └── saved/           ← Pesos del modelo entrenado (.pth)
 ├── utils/
 │   ├── preprocess.py    ← Preprocesamiento de imágenes
-│   └── inference.py     ← Predicción
+│   └── inference.py     ← Predicción con el modelo cargado
 ├── ui/
-│   └── app.py           ← Interfaz Streamlit
+│   └── app.py           ← Interfaz web con Streamlit
 ├── data/
-│   └── animal_data/     ← Dataset de Kaggle (15 carpetas)
+│   └── animal_data/     ← Dataset de Kaggle (se descarga aparte)
 ├── uploads/             ← Imágenes subidas por el usuario
-└── requirements.txt
+├── requirements.txt     ← Dependencias del proyecto
+└── README.md
 ```
 
 ---
 
-## ⚙️ Instalación y uso
+## ⚙️ Instalación paso a paso
 
-### 1. Requisitos
-- Python 3.12
-- Git (opcional)
+### Requisitos previos
+- Python 3.12 instalado
+- Cuenta en kaggle.com (gratis)
 
-### 2. Crear entorno virtual
+### 1. Crear entorno virtual
 ```bash
 py -3.12 -m venv venv
-venv\Scripts\activate        # Windows
-source venv/bin/activate     # Mac/Linux
+venv\Scripts\activate
 ```
 
-### 3. Instalar dependencias
+### 2. Instalar dependencias
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-### 4. Descargar el dataset de Kaggle
-Necesitas una cuenta en kaggle.com y tu API key en `C:\Users\TU_USUARIO\.kaggle\kaggle.json`:
+### 3. Descargar el dataset de Kaggle
+Crea el archivo `C:\Users\TU_USUARIO\.kaggle\kaggle.json` con tu API key:
 ```json
 {"username":"TU_USUARIO","key":"TU_API_KEY"}
 ```
-Luego ejecuta:
+La API key se obtiene en kaggle.com → Settings → API → Create New Token.
+
+Luego descarga el dataset:
 ```bash
 python -c "import kaggle; kaggle.api.authenticate(); kaggle.api.dataset_download_files('likhon148/animal-data', path='data', unzip=True)"
 ```
 
-### 5. Correr la aplicación
+### 4. Correr la aplicación
 
 **Terminal 1 — Backend FastAPI:**
 ```bash
@@ -85,39 +122,59 @@ venv\Scripts\activate
 python -m streamlit run ui/app.py
 ```
 
-### 6. Abrir en el navegador
-- **Streamlit:** http://localhost:8501
-- **FastAPI docs:** http://localhost:8000/docs
+### 5. Abrir en el navegador
+- **App:** http://localhost:8501
+- **API docs:** http://localhost:8000/docs
 
 ---
 
-## 🚀 Flujo de uso
+## 🚀 Cómo usar la aplicación
 
-1. **Entrenar:** En Streamlit selecciona "🏋️ Entrenar", ajusta épocas y haz clic en "Iniciar Entrenamiento"
-2. **Predecir:** Selecciona "🔍 Predecir", sube una imagen y haz clic en "Clasificar"
-3. El modelo muestra el animal detectado con su % de confianza y Top 3 predicciones
+### Entrenar el modelo
+1. Selecciona modo **🏋️ Entrenar**
+2. Ajusta épocas (recomendado: 10-20)
+3. Clic en **🚀 Iniciar Entrenamiento**
+4. Espera a que termine (5-20 minutos según el PC)
 
----
-
-## 📦 Dependencias principales
-```
-fastapi          ← API REST backend
-uvicorn          ← Servidor ASGI
-streamlit        ← Interfaz web
-torch            ← Framework de deep learning
-torchvision      ← Transformaciones de imágenes
-Pillow           ← Manejo de imágenes
-requests         ← Comunicación Streamlit → FastAPI
-scikit-learn     ← Utilidades ML
-numpy / pandas   ← Manipulación de datos
-matplotlib       ← Visualizaciones
-jupyter          ← Notebooks de experimentación
-```
+### Clasificar una imagen
+1. Selecciona modo **🔍 Predecir**
+2. Sube una foto de cualquier animal
+3. Clic en **🔬 Clasificar**
+4. Ve el resultado con porcentaje de confianza y Top 3
 
 ---
 
-## 📝 Notas
-- El modelo se guarda automáticamente en `models/saved/animal_cnn.pth`
-- Con 5 épocas se obtiene ~40% de precisión
-- Con 20 épocas se obtiene ~65-70% de precisión
-- El dataset NO se incluye en el ZIP por su tamaño — descárgalo con el comando de Kaggle
+## 📈 Precisión esperada según épocas
+
+| Épocas | Precisión aproximada |
+|---|---|
+| 5 | ~40% |
+| 10 | ~55% |
+| 20 | ~65-70% |
+| 30 | ~70-75% |
+
+---
+
+## 📦 Tecnologías usadas
+
+| Tecnología | Uso |
+|---|---|
+| **PyTorch** | Entrenamiento e inferencia de la CNN |
+| **FastAPI** | API REST backend |
+| **Streamlit** | Interfaz web |
+| **Torchvision** | Transformaciones y augmentation de imágenes |
+| **Pillow** | Manejo de imágenes |
+| **Kaggle API** | Descarga automática del dataset |
+
+---
+
+## 📈 Dataset
+- **Fuente:** [Kaggle — Animal Data](https://www.kaggle.com/datasets/likhon148/animal-data)
+- **Total imágenes:** ~3,000+
+- **Clases:** 15 animales
+- **Split:** 80% entrenamiento / 20% validación
+
+---
+
+## 👤 Autor
+Felipe Baez — 2026
