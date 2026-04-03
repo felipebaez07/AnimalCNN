@@ -177,4 +177,5 @@ python -m streamlit run ui/app.py
 ---
 
 ## 👤 Autor
-Felipe Baez — 2026
+Felipe Baez — Juan Bonilla - Carlos Caceres
+
